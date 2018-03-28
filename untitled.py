@@ -363,7 +363,7 @@ class Game:
 		self.legalMoves = []
 		self.turnStep = 1
 		self.bot = {}
-		self.finished = False
+		self.finished = True
 		if (self.player[BLUE] == BOT):
 			self.bot[BLUE] = Bot(BLUE,RED)
 		if (self.player[RED] == BOT):
@@ -374,33 +374,6 @@ class Game:
 
 	def event_loop(self):
 		self.mouse_pos = self.graphics.board_coords(pygame.mouse.get_pos()) # what square is the mouse in?
-
-		if (self.finished == True):
-			if(self.turn == RED):
-				self.turn = BLUE
-			else:
-				self.turn = RED
-			if(len(self.board.findAllLegalMoves(self.turn)) == 0):
-				if(self.turn == RED):
-					print("BLUE player wins")
-				else:
-					print ("RED player wins")
-				self.terminate_game()
-			self.finished = False
-
-		if(self.player[self.turn] == RANDOM):
-			moves = self.board.findAllLegalMoves(self.turn)
-			move = moves[randint(0,len(moves)-1)]
-			self.board.performMove(move[0],move[1])
-			self.finished = True
-					
-		elif(self.player[self.turn] == BOT):
-			# print("bot's turn")
-			move = self.bot[self.turn].alphaBetaSearch(self.board,2)
-			# print("move = ",move)
-			self.board.performMove(move[0],move[1])
-			self.finished = True
-
 
 		for event in pygame.event.get():
 
@@ -443,7 +416,32 @@ class Game:
 						self.turnStep=1
 						self.selectedTile = None
 						self.legalMoves = []
+				
+				elif(self.player[self.turn] == RANDOM):
+					moves = self.board.findAllLegalMoves(self.turn)
+					move = moves[randint(0,len(moves)-1)]
+					self.board.performMove(move[0],move[1])
+							
+				else:
+					# print("bot's turn")
+					move = self.bot[self.turn].alphaBetaSearch(self.board,2)
+					# print("move = ",move)
+					self.board.performMove(move[0],move[1])
+					self.finished = True
 
+				if (self.finished == 1):
+					# print("turn changed" , self.turn )
+					if(self.turn == RED):
+						self.turn = BLUE
+					else:
+						self.turn = RED
+
+					if(len(self.board.findAllLegalMoves(self.turn)) == 0):
+						if(self.turn == RED):
+							print("BLUE player wins")
+						else:
+							print ("RED player wins")
+						self.terminate_game()
 
 	def update(self):
 		self.graphics.updateDisplay(self.board, self.selectedTile, self.legalMoves)
