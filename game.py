@@ -61,6 +61,16 @@ class Board:
 					matrix[i][j]=Tile((i,j),BLACK,Piece(BLUE))
 		return matrix
 
+	def updateBoard(self,mat):
+		for i in range(0,self.length):
+			for j in range(0,self.width):
+				if(mat[i][j] == 'r'):
+					self.matrix[i][j].piece = Piece(RED)
+				elif(mat[i][j] == 'b'):
+					self.matrix[i][j].piece = Piece(BLUE)
+				else:
+					self.matrix[i][j].piece = None
+
 	def legalPos(self,cur):
 		if -1<cur[0] and cur[0]<self.length and -1<cur[1] and cur[1]<self.width:
 			return True
@@ -472,5 +482,15 @@ class Game:
 
 #########################################################################
 
+mat = ["rrrrrrrr",
+      "rrrrrrrr",
+      "........",
+      "........",
+      "........",
+      "......b.",
+      "........",
+      "bbbbbb.b",
+      "bbbbbbbb"]
 g=Game()
+g.board.updateBoard(mat)
 g.main()

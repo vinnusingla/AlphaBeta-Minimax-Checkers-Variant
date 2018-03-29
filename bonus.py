@@ -64,6 +64,16 @@ class Board:
 		# matrix = numpy.array(matrix)
 		return matrix
 
+	def updateBoard(self,mat):
+		for i in range(0,self.length):
+			for j in range(0,self.width):
+				if(mat[i][j] == 'r'):
+					self.matrix[i][j].piece = Piece(RED)
+				elif(mat[i][j] == 'b'):
+					self.matrix[i][j].piece = Piece(BLUE)
+				else:
+					self.matrix[i][j].piece = None
+			
 	def legalPos(self,cur):
 		if -1<cur[0] and cur[0]<self.length and -1<cur[1] and cur[1]<self.width:
 			return True
@@ -362,19 +372,17 @@ class Bot:
 				if(board.matrix[i][j].isEmpty() == False):
 					if(board.matrix[i][j].piece.color == self.color):
 						ans=ans+10
-						ans = ans + board.verticallySafe((i,j))
-						ans = ans + board.horizontallySafe((i,j))
-						ans = ans + board.diagonallySafe((i,j))
 					else:
 						ans=ans-10
 
 		#defenses
-		# for i in range(0,board.length):
-		# 	for j in range(0,board.width):
-		# 		if(board.matrix[i][j].isEmpty() == False):
-		# 			if(board.matrix[i][j].piece.color == self.color):
-		# 				ans = ans + board.verticallySafe((i,j))
-		# 				ans = ans + board.horizontallySafe((i,j))
+		for i in range(0,board.length):
+			for j in range(0,board.width):
+				if(board.matrix[i][j].isEmpty() == False):
+					if(board.matrix[i][j].piece.color == self.color):
+						ans = ans + board.verticallySafe((i,j))
+						ans = ans + board.horizontallySafe((i,j))
+						ans = ans + board.diagonallySafe((i,j))
 
 		#attack1 we aren't safe after attacking attack2 we are safe after attacking
 		move = board.findAllLegalMoves(self.color)
@@ -532,6 +540,15 @@ class Game:
 		return True
 
 #########################################################################
-
+mat = ["rrrrrrrr",
+      "rrrrrrrr",
+      "........",
+      "........",
+      "........",
+      "......b.",
+      "........",
+      "bbbbbb.b",
+      "bbbbbbbb"]
 g=Game()
+g.board.updateBoard(mat)
 g.main()
