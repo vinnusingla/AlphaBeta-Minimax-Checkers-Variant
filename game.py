@@ -177,7 +177,47 @@ class Board:
 	def isSafe(self,pos):
 		if(self.horizontallySafe(pos) == 0 and self.verticallySafe(pos) == 0):
 			return True
-			 
+
+	def blockingScore(self,color):
+		score = 0
+		val = .2
+		b = [[0 for i in range(self.width)] for j in range(self.length)]
+		for i in range (0,self.length):
+			for j in range(0,self.width):
+				if(self.matrix[i][j].isEmpty() == False and self.matrix[i][j].piece.color == color):
+					b[i][j] == 1
+		for i in range (1,self.length-1):
+			for j in range(1,self.width-1):
+				if(b[i-1][j]==1 or b[i+1][j]==1):
+					score =score + val
+				if(b[i][j-1]==1 or b[i][j+1]==1):
+					score =score + val
+
+		for i in range (1,self.length-1):
+			if(b[i][j]==1):
+				score =score + val
+				if(b[i-1][0]==1 or b[i+1][0]==1):
+					score =score + val
+				if(b[i-1][self.width-1]==1 or b[i+1][self.width-1]==1):
+					score =score + val
+		
+		for j in range (1,self.width-1):
+			if(b[i][j]==1):
+				score =score + val
+				if(b[0][j-1]==1 or b[0][j+1]==1):
+					score =score + val
+				if(b[self.length-1][j-1]==1 or b[self.length-1][j+1]==1):
+					score =score + val	 
+		if(b[0][0] == 1):
+			score = score + 2 * val	 
+		if(b[0][self.width-1] == 1):
+			score = score + 2 * val	 
+		if(b[self.length-1][0] == 1):
+			score = score + 2 * val	 
+		if(b[self.length-1][self.width-1] == 1):
+			score = score + 2 * val
+
+		return score 
 
 class Graphics:
 	def __init__(self): 
@@ -322,12 +362,13 @@ class Bot:
 						ans=ans-10
 
 		#defenses
-		for i in range(0,board.length):
-			for j in range(0,board.width):
-				if(board.matrix[i][j].isEmpty() == False):
-					if(board.matrix[i][j].piece.color == self.color):
-						ans = ans + board.verticallySafe((i,j))
-						ans = ans + board.horizontallySafe((i,j))
+		# for i in range(0,board.length):
+		# 	for j in range(0,board.width):
+		# 		if(board.matrix[i][j].isEmpty() == False):
+		# 			if(board.matrix[i][j].piece.color == self.color):
+		# 				ans = ans + board.verticallySafe((i,j))
+		# 				ans = ans + board.horizontallySafe((i,j))
+		ans = ans + board.blockingScore(RED)
 
 		#attack1 we aren't safe after attacking attack2 we are safe after attacking
 		move = board.findAllLegalMoves(self.color)

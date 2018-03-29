@@ -1,7 +1,6 @@
 import pygame,sys,os
 from copy import deepcopy
 from random import randint
-import numpy
 
 ##COLORS##
 #             R    G    B 
@@ -18,21 +17,20 @@ HUMAN  = 0
 BOT    = 1
 RANDOM = 2 
 
-class Tile:
-	def __init__ (self,pos,color,piece=None):
-		self.pos=pos
-		self.color=color
-		self.piece=piece
+#######################
+def getColor(curColor):
+	if(curColor == 'r'):
+		curColor = RED
+	else:
+		curColor = BLUE
+	return curColor
 
-	def isEmpty(self):
-		if self.piece is None :
-			return True
-		else:
-			return False
-
-class Piece:
-	def __init__(self,color):
-		self.color=color
+def getColorLiteral(x):
+	if(x == RED):
+		return 'r'
+	else:
+		return 'b'
+########################
 
 class Board:
 	def __init__ (self):
@@ -41,39 +39,18 @@ class Board:
 		self.matrix = self.newBoard(self.length,self.width) 
 
 	def newBoard(self,l,w):
-		matrix = [[None for x in range(w)] for y in range(l)]
+		matrix = [['.' for x in range(w)] for y in range(l)]
 		for i in range(0,2):
 			for j in range(0,w):
-				if((j+i)%2==0):
-					matrix[i][j]=Tile((i,j),WHITE,Piece(RED))
-				else:
-					matrix[i][j]=Tile((i,j),BLACK,Piece(RED))
-		for i in range(2,l-2):
-			for j in range(0,w):
-				if((j+i)%2==0):
-					matrix[i][j]=Tile((i,j),WHITE)
-				else:
-					matrix[i][j]=Tile((i,j),BLACK)
+				matrix[i][j]='r'
 		for i in range(l-2,l):
 			for j in range(0,w):
-				if((j+i)%2==0):
-					matrix[i][j]=Tile((i,j),WHITE,Piece(BLUE))
-				else:
-					matrix[i][j]=Tile((i,j),BLACK,Piece(BLUE))
-
-		# matrix = numpy.array(matrix)
+				matrix[i][j]='b'
 		return matrix
 
 	def updateBoard(self,mat):
-		for i in range(0,self.length):
-			for j in range(0,self.width):
-				if(mat[i][j] == 'r'):
-					self.matrix[i][j].piece = Piece(RED)
-				elif(mat[i][j] == 'b'):
-					self.matrix[i][j].piece = Piece(BLUE)
-				else:
-					self.matrix[i][j].piece = None
-			
+		board = mat
+
 	def legalPos(self,cur):
 		if -1<cur[0] and cur[0]<self.length and -1<cur[1] and cur[1]<self.width:
 			return True
@@ -82,73 +59,47 @@ class Board:
 
 	def findLegalMoves(self,cur):
 		ans = []
-		curColor = self.matrix[cur[0]][cur[1]].piece.color
+		curColor = self.matrix[cur[0]][cur[1]]
+
 		if cur is not None:
-			#down
+
 			if(self.legalPos((cur[0]+1,cur[1]))):
-				if(self.matrix[cur[0]+1][cur[1]].isEmpty()):
+				if(self.matrix[cur[0]+1][cur[1]] == '.'):
 					ans.append((cur[0]+1,cur[1]))
-				elif self.matrix[cur[0]+1][cur[1]].piece.color != curColor and self.legalPos((cur[0]+2,cur[1])) and \
-				self.matrix[cur[0]+2][cur[1]].isEmpty():
+				elif self.matrix[cur[0]+1][cur[1]] != curColor and self.legalPos((cur[0]+2,cur[1])) and \
+				self.matrix[cur[0]+2][cur[1]]  == '.':
 					ans.append((cur[0]+2,cur[1]))
-			#up
+
 			if(self.legalPos((cur[0]-1,cur[1]))):
-				if(self.matrix[cur[0]-1][cur[1]].isEmpty()):
+				if(self.matrix[cur[0]-1][cur[1]]=='.'):
 					ans.append((cur[0]-1,cur[1]))
-				elif self.matrix[cur[0]-1][cur[1]].piece.color != curColor and self.legalPos((cur[0]-2,cur[1])) and \
-				self.matrix[cur[0]-2][cur[1]].isEmpty():
+				elif self.matrix[cur[0]-1][cur[1]] != curColor and self.legalPos((cur[0]-2,cur[1])) and \
+				self.matrix[cur[0]-2][cur[1]] == '.':
 					ans.append((cur[0]-2,cur[1]))
-			#right		
+
 			if(self.legalPos((cur[0],cur[1]+1))):
-				if(self.matrix[cur[0]][cur[1]+1].isEmpty()):
+				if(self.matrix[cur[0]][cur[1]+1]=='.'):
 					ans.append((cur[0],cur[1]+1))
-				elif self.matrix[cur[0]][cur[1]+1].piece.color != curColor and self.legalPos((cur[0],cur[1]+2)) and \
-				self.matrix[cur[0]][cur[1]+2].isEmpty():
+				elif self.matrix[cur[0]][cur[1]+1] != curColor and self.legalPos((cur[0],cur[1]+2)) and \
+				self.matrix[cur[0]][cur[1]+2]=='.':
 					ans.append((cur[0],cur[1]+2))
-			#left
+
 			if(self.legalPos((cur[0],cur[1]-1))):
-				if(self.matrix[cur[0]][cur[1]-1].isEmpty()):
+				if(self.matrix[cur[0]][cur[1]-1]=='.'):
 					ans.append((cur[0],cur[1]-1))
-				elif self.matrix[cur[0]][cur[1]-1].piece.color != curColor and self.legalPos((cur[0],cur[1]-2)) and \
-				self.matrix[cur[0]][cur[1]-2].isEmpty():
+				elif self.matrix[cur[0]][cur[1]-1] != curColor and self.legalPos((cur[0],cur[1]-2)) and \
+				self.matrix[cur[0]][cur[1]-2]=='.':
 					ans.append((cur[0],cur[1]-2))
-			#down right
-			if(self.legalPos((cur[0]+1,cur[1]+1))):
-				if(self.matrix[cur[0]+1][cur[1]+1].isEmpty()):
-					ans.append((cur[0]+1,cur[1]+1))
-				elif self.matrix[cur[0]+1][cur[1]+1].piece.color != curColor and self.legalPos((cur[0]+2,cur[1]+2)) and \
-				self.matrix[cur[0]+2][cur[1]+2].isEmpty():
-					ans.append((cur[0]+2,cur[1]+2))
-			#down left
-			if(self.legalPos((cur[0]+1,cur[1]-1))):
-				if(self.matrix[cur[0]+1][cur[1]-1].isEmpty()):
-					ans.append((cur[0]+1,cur[1]-1))
-				elif self.matrix[cur[0]+1][cur[1]-1].piece.color != curColor and self.legalPos((cur[0]+2,cur[1]-2)) and \
-				self.matrix[cur[0]+2][cur[1]-2].isEmpty():
-					ans.append((cur[0]+2,cur[1]-2))
-			#up right
-			if(self.legalPos((cur[0]-1,cur[1]+1))):
-				if(self.matrix[cur[0]-1][cur[1]+1].isEmpty()):
-					ans.append((cur[0]-1,cur[1]+1))
-				elif self.matrix[cur[0]-1][cur[1]+1].piece.color != curColor and self.legalPos((cur[0]-2,cur[1]+2)) and \
-				self.matrix[cur[0]-2][cur[1]+2].isEmpty():
-					ans.append((cur[0]-2,cur[1]+2))
-			#up left
-			if(self.legalPos((cur[0]-1,cur[1]-1))):
-				if(self.matrix[cur[0]-1][cur[1]-1].isEmpty()):
-					ans.append((cur[0]-1,cur[1]-1))
-				elif self.matrix[cur[0]-1][cur[1]-1].piece.color != curColor and self.legalPos((cur[0]-2,cur[1]-2)) and \
-				self.matrix[cur[0]-2][cur[1]-2].isEmpty():
-					ans.append((cur[0]-2,cur[1]-2))
 
 		return ans
 
 	def findAllLegalMoves(self,color):
+		color = getColorLiteral(color)
 		moves=[]
 		for i in range(0,self.length):
 			for j in range(0,self.width):
-				if(self.matrix[i][j].isEmpty() == False):
-					if(self.matrix[i][j].piece.color==color):
+				if(self.matrix[i][j] != '.'):
+					if(self.matrix[i][j]==color):
 						possibleActions = self.findLegalMoves((i,j))
 						for k in range (0,len(possibleActions)):
 							moves.append(((i,j),possibleActions[k]))
@@ -161,126 +112,58 @@ class Board:
 			return ( (pos1[0]+pos2[0])/2 , (pos1[1]+pos2[1])/2 )
 
 	def performMove(self,pos1,pos2):
-		self.matrix[pos2[0]][pos2[1]].piece = self.matrix[pos1[0]][pos1[1]].piece
-		self.matrix[pos1[0]][pos1[1]].piece = None
+		self.matrix[pos2[0]][pos2[1]] = self.matrix[pos1[0]][pos1[1]]
+		self.matrix[pos1[0]][pos1[1]] = '.'
 		jump = self.isJump(pos1,pos2)
 		if  jump != (-1,-1):
 			#it means a jump
-			self.matrix[jump[0]][jump[1]].piece.color = self.matrix[pos2[0]][pos2[1]].piece.color
+			self.matrix[jump[0]][jump[1]] = self.matrix[pos2[0]][pos2[1]]
 
 	def rollbackMove(self,pos1,pos2):
-		self.matrix[pos2[0]][pos2[1]].piece = self.matrix[pos1[0]][pos1[1]].piece
-		self.matrix[pos1[0]][pos1[1]].piece = None
+		self.matrix[pos2[0]][pos2[1]] = self.matrix[pos1[0]][pos1[1]]
+		self.matrix[pos1[0]][pos1[1]] = None
 		jump = self.isJump(pos1,pos2)
 		if  jump != (-1,-1):
 			#it means a jump
-			if self.matrix[pos2[0]][pos2[1]].piece.color == RED:
-				self.matrix[jump[0]][jump[1]].piece.color = BLUE
+			if self.matrix[pos2[0]][pos2[1]] == 'r':
+				self.matrix[jump[0]][jump[1]] = 'b'
 			else:
-				self.matrix[jump[0]][jump[1]].piece.color = RED
+				self.matrix[jump[0]][jump[1]] = 'r'
 
 	def verticallySafe(self,pos):
-		color = self.matrix[pos[0]][pos[1]].piece.color
-		if (self.legalPos((pos[0],pos[1]+1)) and self.matrix[pos[0]][pos[1]+1].isEmpty() == False and \
-			self.matrix[pos[0]][pos[1]+1].piece.color != color and self.legalPos((pos[0],pos[1]-1)) and\
-			 self.matrix[pos[0]][pos[1]-1].isEmpty()):
+		color = self.matrix[pos[0]][pos[1]]
+		if (self.legalPos((pos[0],pos[1]+1)) and self.matrix[pos[0]][pos[1]+1] != '.' and \
+			self.matrix[pos[0]][pos[1]+1] != color and self.legalPos((pos[0],pos[1]-1)) and\
+			 self.matrix[pos[0]][pos[1]-1] == '.'):
 			return -5
-		elif (self.legalPos((pos[0],pos[1]-1)) and self.matrix[pos[0]][pos[1]-1].isEmpty() == False and \
-			self.matrix[pos[0]][pos[1]-1].piece.color != color and self.legalPos((pos[0],pos[1]+1)) and\
-			 self.matrix[pos[0]][pos[1]+1].isEmpty()):
+		elif (self.legalPos((pos[0],pos[1]-1)) and self.matrix[pos[0]][pos[1]-1] != '.' and \
+			self.matrix[pos[0]][pos[1]-1] != color and self.legalPos((pos[0],pos[1]+1)) and\
+			 self.matrix[pos[0]][pos[1]+1] == '.'):
 			return -5
 		else:
 			return 0
 
 	def horizontallySafe(self,pos):
-		color = self.matrix[pos[0]][pos[1]].piece.color
-		if (self.legalPos((pos[0]+1,pos[1])) and self.matrix[pos[0]+1][pos[1]].isEmpty() == False and \
-			self.matrix[pos[0]+1][pos[1]].piece.color != color and self.legalPos((pos[0]-1,pos[1])) and\
-			 self.matrix[pos[0]-1][pos[1]].isEmpty()):
+		color = self.matrix[pos[0]][pos[1]]
+		if (self.legalPos((pos[0]+1,pos[1])) and self.matrix[pos[0]+1][pos[1]] != '.' and \
+			self.matrix[pos[0]+1][pos[1]] != color and self.legalPos((pos[0]-1,pos[1])) and\
+			 self.matrix[pos[0]-1][pos[1]] == '.'):
 			return -5
-		elif (self.legalPos((pos[0]-1,pos[1])) and self.matrix[pos[0]-1][pos[1]].isEmpty() == False and \
-			self.matrix[pos[0]-1][pos[1]].piece.color != color and self.legalPos((pos[0]+1,pos[1])) and\
-			 self.matrix[pos[0]+1][pos[1]].isEmpty()):
-			return -5
-		else:
-			return 0
-
-	def diagonallySafe(self,pos):
-		color = self.matrix[pos[0]][pos[1]].piece.color
-		if (self.legalPos((pos[0]+1,pos[1]+1)) and self.matrix[pos[0]+1][pos[1]+1].isEmpty() == False and \
-			self.matrix[pos[0]+1][pos[1]+1].piece.color != color and self.legalPos((pos[0]-1,pos[1]-1)) and\
-			 self.matrix[pos[0]-1][pos[1]-1].isEmpty()):
-			return -5
-		elif (self.legalPos((pos[0]-1,pos[1]-1)) and self.matrix[pos[0]-1][pos[1]-1].isEmpty() == False and \
-			self.matrix[pos[0]-1][pos[1]-1].piece.color != color and self.legalPos((pos[0]+1,pos[1]+1)) and\
-			 self.matrix[pos[0]+1][pos[1]+1].isEmpty()):
-			return -5
-		elif (self.legalPos((pos[0]-1,pos[1]+1)) and self.matrix[pos[0]-1][pos[1]+1].isEmpty() == False and \
-			self.matrix[pos[0]-1][pos[1]+1].piece.color != color and self.legalPos((pos[0]+1,pos[1]-1)) and\
-			 self.matrix[pos[0]+1][pos[1]-1].isEmpty()):
-			return -5
-		elif (self.legalPos((pos[0]+1,pos[1]-1)) and self.matrix[pos[0]+1][pos[1]-1].isEmpty() == False and \
-			self.matrix[pos[0]+1][pos[1]-1].piece.color != color and self.legalPos((pos[0]-1,pos[1]+1)) and\
-			 self.matrix[pos[0]-1][pos[1]+1].isEmpty()):
+		elif (self.legalPos((pos[0]-1,pos[1])) and self.matrix[pos[0]-1][pos[1]] != '.' and \
+			self.matrix[pos[0]-1][pos[1]] != color and self.legalPos((pos[0]+1,pos[1])) and\
+			 self.matrix[pos[0]+1][pos[1]] == '.'):
 			return -5
 		else:
 			return 0
-
-	def blockingScore(self,color):
-		score = 0
-		val = .2
-		b = [[0 for i in range(self.width)] for j in range(self.length)]
-		for i in range (0,self.length):
-			for j in range(0,self.width):
-				if(self.matrix[i][j].isEmpty() == False and self.matrix[i][j].piece.color == color):
-					b[i][j] == 1
-		for i in range (1,self.length-1):
-			for j in range(1,self.width-1):
-				if(b[i-1][j]==1 or b[i+1][j]==1):
-					score =score + val
-				if(b[i][j-1]==1 or b[i][j+1]==1):
-					score =score + val
-				if(b[i-1][j-1]==1 or b[i+1][j+1]==1):
-					score =score + val
-				if(b[i+1][j-1]==1 or b[i-1][j+1]==1):
-					score =score + val
-
-		for i in range (1,self.length-1):
-			if(b[i][j]==1):
-				score =score + 3*val
-				if(b[i-1][0]==1 or b[i+1][0]==1):
-					score =score + val
-				if(b[i-1][self.width-1]==1 or b[i+1][self.width-1]==1):
-					score =score + val
-		
-		for j in range (1,self.width-1):
-			if(b[i][j]==1):
-				score =score + 3*val
-				if(b[0][j-1]==1 or b[0][j+1]==1):
-					score =score + val
-				if(b[self.length-1][j-1]==1 or b[self.length-1][j+1]==1):
-					score =score + val	 
-		if(b[0][0] == 1):
-			score = score + 4 * val	 
-		if(b[0][self.width-1] == 1):
-			score = score + 4 * val	 
-		if(b[self.length-1][0] == 1):
-			score = score + 4 * val	 
-		if(b[self.length-1][self.width-1] == 1):
-			score = score + 4 * val
-
-		return score 
-
-
 
 	def isSafe(self,pos):
-		if(self.horizontallySafe(pos) == 0 and self.verticallySafe(pos) == 0 and self.diagonallySafe(pos) == 0):
+		if(self.horizontallySafe(pos) == 0 and self.verticallySafe(pos) == 0):
 			return True
 			 
 
 class Graphics:
 	def __init__(self): 
-		self.fps = 10
+		self.fps = 60
 		self.clock = pygame.time.Clock()
 		self.length = 720
 		self.width = 640
@@ -312,8 +195,8 @@ class Graphics:
 	def drawBoardPieces(self, board):
 		for x in range(0,board.length):
 			for y in range(0,board.width):
-				if board.matrix[x][y].piece is not None:
-					if board.matrix[x][y].piece.color == RED:
+				if board.matrix[x][y] != '.':
+					if board.matrix[x][y] == 'r':
 						self.screen.blit(self.redTurtle,self.pixelCoords((x,y)))
 					else:
 						self.screen.blit(self.blueTurtle,self.pixelCoords((x,y)))
@@ -322,9 +205,9 @@ class Graphics:
 		for square in squares:
 			pygame.draw.rect(self.screen, FADE, (square[0] * self.square_size, square[1] * self.square_size, self.square_size, self.square_size))	
 
-		if origin != None:
-			origin=origin.pos
-			pygame.draw.rect(self.screen, FADE, (origin[0] * self.square_size, origin[1] * self.square_size, self.square_size, self.square_size))
+		# if origin != None:
+		# 	origin=origin.pos
+		# 	pygame.draw.rect(self.screen, FADE, (origin[0] * self.square_size, origin[1] * self.square_size, self.square_size, self.square_size))
 
 	def pixelCoords(self, board_coords):
 		return (board_coords[0] * self.square_size + (self.square_size-self.pWidth)/2 , board_coords[1] * self.square_size \
@@ -411,24 +294,22 @@ class Bot:
 
 	def eval(self,board):
 		ans=0
-		#player count and defenses
+		#player count
 		for i in range(0,board.length):
 			for j in range(0,board.width):
-				if(board.matrix[i][j].isEmpty() == False):
-					if(board.matrix[i][j].piece.color == self.color):
+				if(board.matrix[i][j] != '.'):
+					if(getColor(board.matrix[i][j]) == self.color):
 						ans=ans+10
 					else:
 						ans=ans-10
 
 		#defenses
-		# for i in range(0,board.length):
-		# 	for j in range(0,board.width):
-		# 		if(board.matrix[i][j].isEmpty() == False):
-		# 			if(board.matrix[i][j].piece.color == self.color):
-		# 				ans = ans + board.verticallySafe((i,j))
-		# 				ans = ans + board.horizontallySafe((i,j))
-		# 				ans = ans + board.diagonallySafe((i,j))
-		ans = ans + board.blockingScore(RED)
+		for i in range(0,board.length):
+			for j in range(0,board.width):
+				if(board.matrix[i][j] != '.'):
+					if(getColor(board.matrix[i][j]) == self.color):
+						ans = ans + board.verticallySafe((i,j))
+						ans = ans + board.horizontallySafe((i,j))
 
 		#attack1 we aren't safe after attacking attack2 we are safe after attacking
 		move = board.findAllLegalMoves(self.color)
@@ -454,8 +335,8 @@ class Bot:
 		red = False
 		for i in range(0,board.length):
 			for j in range(0,board.width):
-				if(board.matrix[i][j].isEmpty() == False):
-					if(board.matrix[i][j].piece.color == BLUE):
+				if(board.matrix[i][j] != False):
+					if(getColor(board.matrix[i][j]) == BLUE):
 						blue = True
 					else:
 						red = True
@@ -486,6 +367,7 @@ class Game:
 		self.graphics.setup_window()
 
 	def event_loop(self):
+		self.mouse_pos = self.graphics.board_coords(pygame.mouse.get_pos()) # what square is the mouse in?
 
 		if (self.finished == True):
 			if(self.turn == RED):
@@ -505,7 +387,6 @@ class Game:
 			move = moves[randint(0,len(moves)-1)]
 			self.board.performMove(move[0],move[1])
 			self.finished = True
-			return True
 					
 		elif(self.player[self.turn] == BOT):
 			# print("bot's turn")
@@ -513,7 +394,6 @@ class Game:
 			# print("move = ",move)
 			self.board.performMove(move[0],move[1])
 			self.finished = True
-			return True
 
 
 		for event in pygame.event.get():
@@ -525,18 +405,18 @@ class Game:
 				self.terminate_game()
 
 			elif event.type == pygame.MOUSEBUTTONDOWN:
-				self.mouse_pos = self.graphics.board_coords(pygame.mouse.get_pos()) # what square is the mouse in?
 				print(self.mouse_pos)
 				if self.player[self.turn] == HUMAN:
 					# print("Human turn")
 					if(self.turnStep==1):
 						self.selectedTile = self.board.matrix[self.mouse_pos[0]][self.mouse_pos[1]]
 						self.legalMoves = []
-						if(self.selectedTile.isEmpty() or self.selectedTile.piece.color != self.turn):
+						if(self.selectedTile == '.' or getColor(self.selectedTile) != self.turn):
 							self.selectedTile = None
-						elif(self.selectedTile.piece.color == self.turn):
-							self.legalMoves = self.board.findLegalMoves(self.selectedTile.pos)
+						elif(getColor(self.selectedTile) == self.turn):
+							self.legalMoves = self.board.findLegalMoves(self.mouse_pos)
 							self.turnStep = 2
+							self.oldpos = self.mouse_pos
 						self.finished = False
 					else:
 						validMove = False
@@ -548,17 +428,16 @@ class Game:
 								break
 						# print("validMove = ",validMove)
 						if(validMove):
-							self.board.matrix[self.mouse_pos[0]][self.mouse_pos[1]].piece=self.selectedTile.piece
-							self.board.matrix[self.selectedTile.pos[0]][self.selectedTile.pos[1]].piece = None
-							jump = self.board.isJump(self.mouse_pos,self.selectedTile.pos)
+							self.board.matrix[self.mouse_pos[0]][self.mouse_pos[1]] = self.selectedTile
+							self.board.matrix[self.oldpos[0]][self.oldpos[1]] = '.'
+							jump = self.board.isJump(self.mouse_pos,self.oldpos)
 							if  jump != (-1,-1):
 								#it means a jump
-								self.board.matrix[jump[0]][jump[1]].piece.color = self.turn
+								self.board.matrix[jump[0]][jump[1]] = getColorLiteral(self.turn)
 							self.finished = True
 						self.turnStep=1
 						self.selectedTile = None
 						self.legalMoves = []
-					return True
 
 
 	def update(self):
@@ -570,22 +449,12 @@ class Game:
 
 	def main(self):
 		self.setup()
-		self.update()
 		while True: # main game loop
-			if(self.event_loop() is not None ):
-				self.update()
-
-	def check_for_endgame(self):
-		for x in xrange(8):
-			for y in xrange(8):
-				if self.board.location((x,y)).color == BLACK and self.board.location((x,y)).occupant != None \
-				and self.board.location((x,y)).occupant.color == self.turn:
-					if self.board.legal_moves((x,y)) != []:
-						return False
-
-		return True
+			self.event_loop()
+			self.update()
 
 #########################################################################
+
 mat = ["rrrrrrrr",
       "rrrrrrrr",
       "........",
@@ -596,5 +465,5 @@ mat = ["rrrrrrrr",
       "bbbbbb.b",
       "bbbbbbbb"]
 g=Game()
-g.board.updateBoard(mat)
+# g.board.updateBoard(mat)
 g.main()
