@@ -195,16 +195,37 @@ class Board:
 		else:
 			return 0
 
+	def diagonallySafe(self,pos):
+		color = self.matrix[pos[0]][pos[1]].piece.color
+		if (self.legalPos((pos[0]+1,pos[1]+1)) and self.matrix[pos[0]+1][pos[1]+1].isEmpty() == False and \
+			self.matrix[pos[0]+1][pos[1]+1].piece.color != color and self.legalPos((pos[0]-1,pos[1]-1)) and\
+			 self.matrix[pos[0]-1][pos[1]-1].isEmpty()):
+			return -5
+		elif (self.legalPos((pos[0]-1,pos[1]-1)) and self.matrix[pos[0]-1][pos[1]-1].isEmpty() == False and \
+			self.matrix[pos[0]-1][pos[1]-1].piece.color != color and self.legalPos((pos[0]+1,pos[1]+1)) and\
+			 self.matrix[pos[0]+1][pos[1]+1].isEmpty()):
+			return -5
+		elif (self.legalPos((pos[0]-1,pos[1]+1)) and self.matrix[pos[0]-1][pos[1]+1].isEmpty() == False and \
+			self.matrix[pos[0]-1][pos[1]+1].piece.color != color and self.legalPos((pos[0]+1,pos[1]-1)) and\
+			 self.matrix[pos[0]+1][pos[1]-1].isEmpty()):
+			return -5
+		elif (self.legalPos((pos[0]+1,pos[1]-1)) and self.matrix[pos[0]+1][pos[1]-1].isEmpty() == False and \
+			self.matrix[pos[0]+1][pos[1]-1].piece.color != color and self.legalPos((pos[0]-1,pos[1]+1)) and\
+			 self.matrix[pos[0]-1][pos[1]+1].isEmpty()):
+			return -5
+		else:
+			return 0
+
 
 
 	def isSafe(self,pos):
-		if(self.horizontallySafe(pos) == 0 and self.verticallySafe(pos) == 0):
+		if(self.horizontallySafe(pos) == 0 and self.verticallySafe(pos) == 0 and self.diagonallySafe(pos) == 0):
 			return True
 			 
 
 class Graphics:
 	def __init__(self): 
-		self.fps = 60
+		self.fps = 10
 		self.clock = pygame.time.Clock()
 		self.length = 720
 		self.width = 640
@@ -335,22 +356,25 @@ class Bot:
 
 	def eval(self,board):
 		ans=0
-		#player count
+		#player count and defenses
 		for i in range(0,board.length):
 			for j in range(0,board.width):
 				if(board.matrix[i][j].isEmpty() == False):
 					if(board.matrix[i][j].piece.color == self.color):
 						ans=ans+10
+						ans = ans + board.verticallySafe((i,j))
+						ans = ans + board.horizontallySafe((i,j))
+						ans = ans + board.diagonallySafe((i,j))
 					else:
 						ans=ans-10
 
 		#defenses
-		for i in range(0,board.length):
-			for j in range(0,board.width):
-				if(board.matrix[i][j].isEmpty() == False):
-					if(board.matrix[i][j].piece.color == self.color):
-						ans = ans + board.verticallySafe((i,j))
-						ans = ans + board.horizontallySafe((i,j))
+		# for i in range(0,board.length):
+		# 	for j in range(0,board.width):
+		# 		if(board.matrix[i][j].isEmpty() == False):
+		# 			if(board.matrix[i][j].piece.color == self.color):
+		# 				ans = ans + board.verticallySafe((i,j))
+		# 				ans = ans + board.horizontallySafe((i,j))
 
 		#attack1 we aren't safe after attacking attack2 we are safe after attacking
 		move = board.findAllLegalMoves(self.color)
@@ -408,7 +432,6 @@ class Game:
 		self.graphics.setup_window()
 
 	def event_loop(self):
-		self.mouse_pos = self.graphics.board_coords(pygame.mouse.get_pos()) # what square is the mouse in?
 
 		if (self.finished == True):
 			if(self.turn == RED):
@@ -428,6 +451,7 @@ class Game:
 			move = moves[randint(0,len(moves)-1)]
 			self.board.performMove(move[0],move[1])
 			self.finished = True
+			return True
 					
 		elif(self.player[self.turn] == BOT):
 			# print("bot's turn")
@@ -435,6 +459,7 @@ class Game:
 			# print("move = ",move)
 			self.board.performMove(move[0],move[1])
 			self.finished = True
+			return True
 
 
 		for event in pygame.event.get():
@@ -446,6 +471,7 @@ class Game:
 				self.terminate_game()
 
 			elif event.type == pygame.MOUSEBUTTONDOWN:
+				self.mouse_pos = self.graphics.board_coords(pygame.mouse.get_pos()) # what square is the mouse in?
 				print(self.mouse_pos)
 				if self.player[self.turn] == HUMAN:
 					# print("Human turn")
@@ -478,6 +504,7 @@ class Game:
 						self.turnStep=1
 						self.selectedTile = None
 						self.legalMoves = []
+					return True
 
 
 	def update(self):
@@ -489,9 +516,10 @@ class Game:
 
 	def main(self):
 		self.setup()
+		self.update()
 		while True: # main game loop
-			self.event_loop()
-			self.update()
+			if(self.event_loop() is not None ):
+				self.update()
 
 	def check_for_endgame(self):
 		for x in xrange(8):
