@@ -1,6 +1,7 @@
 import pygame,sys,os
 from copy import deepcopy
 from random import randint
+import numpy
 
 ##COLORS##
 #             R    G    B 
@@ -59,6 +60,8 @@ class Board:
 					matrix[i][j]=Tile((i,j),WHITE,Piece(BLUE))
 				else:
 					matrix[i][j]=Tile((i,j),BLACK,Piece(BLUE))
+
+		# matrix = numpy.array(matrix)
 		return matrix
 
 	def legalPos(self,cur):
@@ -71,34 +74,62 @@ class Board:
 		ans = []
 		curColor = self.matrix[cur[0]][cur[1]].piece.color
 		if cur is not None:
-
+			#down
 			if(self.legalPos((cur[0]+1,cur[1]))):
 				if(self.matrix[cur[0]+1][cur[1]].isEmpty()):
 					ans.append((cur[0]+1,cur[1]))
 				elif self.matrix[cur[0]+1][cur[1]].piece.color != curColor and self.legalPos((cur[0]+2,cur[1])) and \
 				self.matrix[cur[0]+2][cur[1]].isEmpty():
 					ans.append((cur[0]+2,cur[1]))
-
+			#up
 			if(self.legalPos((cur[0]-1,cur[1]))):
 				if(self.matrix[cur[0]-1][cur[1]].isEmpty()):
 					ans.append((cur[0]-1,cur[1]))
 				elif self.matrix[cur[0]-1][cur[1]].piece.color != curColor and self.legalPos((cur[0]-2,cur[1])) and \
 				self.matrix[cur[0]-2][cur[1]].isEmpty():
 					ans.append((cur[0]-2,cur[1]))
-
+			#right		
 			if(self.legalPos((cur[0],cur[1]+1))):
 				if(self.matrix[cur[0]][cur[1]+1].isEmpty()):
 					ans.append((cur[0],cur[1]+1))
 				elif self.matrix[cur[0]][cur[1]+1].piece.color != curColor and self.legalPos((cur[0],cur[1]+2)) and \
 				self.matrix[cur[0]][cur[1]+2].isEmpty():
 					ans.append((cur[0],cur[1]+2))
-
+			#left
 			if(self.legalPos((cur[0],cur[1]-1))):
 				if(self.matrix[cur[0]][cur[1]-1].isEmpty()):
 					ans.append((cur[0],cur[1]-1))
 				elif self.matrix[cur[0]][cur[1]-1].piece.color != curColor and self.legalPos((cur[0],cur[1]-2)) and \
 				self.matrix[cur[0]][cur[1]-2].isEmpty():
 					ans.append((cur[0],cur[1]-2))
+			#down right
+			if(self.legalPos((cur[0]+1,cur[1]+1))):
+				if(self.matrix[cur[0]+1][cur[1]+1].isEmpty()):
+					ans.append((cur[0]+1,cur[1]+1))
+				elif self.matrix[cur[0]+1][cur[1]+1].piece.color != curColor and self.legalPos((cur[0]+2,cur[1]+2)) and \
+				self.matrix[cur[0]+2][cur[1]+2].isEmpty():
+					ans.append((cur[0]+2,cur[1]+2))
+			#down left
+			if(self.legalPos((cur[0]+1,cur[1]-1))):
+				if(self.matrix[cur[0]+1][cur[1]-1].isEmpty()):
+					ans.append((cur[0]+1,cur[1]-1))
+				elif self.matrix[cur[0]+1][cur[1]-1].piece.color != curColor and self.legalPos((cur[0]+2,cur[1]-2)) and \
+				self.matrix[cur[0]+2][cur[1]-2].isEmpty():
+					ans.append((cur[0]+2,cur[1]-2))
+			#up right
+			if(self.legalPos((cur[0]-1,cur[1]+1))):
+				if(self.matrix[cur[0]-1][cur[1]+1].isEmpty()):
+					ans.append((cur[0]-1,cur[1]+1))
+				elif self.matrix[cur[0]-1][cur[1]+1].piece.color != curColor and self.legalPos((cur[0]-2,cur[1]+2)) and \
+				self.matrix[cur[0]-2][cur[1]+2].isEmpty():
+					ans.append((cur[0]-2,cur[1]+2))
+			#up left
+			if(self.legalPos((cur[0]-1,cur[1]-1))):
+				if(self.matrix[cur[0]-1][cur[1]-1].isEmpty()):
+					ans.append((cur[0]-1,cur[1]-1))
+				elif self.matrix[cur[0]-1][cur[1]-1].piece.color != curColor and self.legalPos((cur[0]-2,cur[1]-2)) and \
+				self.matrix[cur[0]-2][cur[1]-2].isEmpty():
+					ans.append((cur[0]-2,cur[1]-2))
 
 		return ans
 
@@ -140,28 +171,34 @@ class Board:
 
 	def verticallySafe(self,pos):
 		color = self.matrix[pos[0]][pos[1]].piece.color
-		if (self.legalPos((pos[0],pos[1]+1)) == False or (self.matrix[pos[0]][pos[1]+1].isEmpty() == False and \
-			self.matrix[pos[0]][pos[1]+1].piece.color == color)):
-			return 1
-		elif (self.legalPos((pos[0],pos[1]-1)) == False or (self.matrix[pos[0]][pos[1]-1].isEmpty() == False and \
-			self.matrix[pos[0]][pos[1]-1].piece.color == color)):
-			return 1
+		if (self.legalPos((pos[0],pos[1]+1)) and self.matrix[pos[0]][pos[1]+1].isEmpty() == False and \
+			self.matrix[pos[0]][pos[1]+1].piece.color != color and self.legalPos((pos[0],pos[1]-1)) and\
+			 self.matrix[pos[0]][pos[1]-1].isEmpty()):
+			return -5
+		elif (self.legalPos((pos[0],pos[1]-1)) and self.matrix[pos[0]][pos[1]-1].isEmpty() == False and \
+			self.matrix[pos[0]][pos[1]-1].piece.color != color and self.legalPos((pos[0],pos[1]+1)) and\
+			 self.matrix[pos[0]][pos[1]+1].isEmpty()):
+			return -5
 		else:
 			return 0
 
 	def horizontallySafe(self,pos):
 		color = self.matrix[pos[0]][pos[1]].piece.color
-		if (self.legalPos((pos[0]+1,pos[1])) == False or (self.matrix[pos[0]+1][pos[1]].isEmpty() == False and \
-			self.matrix[pos[0]+1][pos[1]].piece.color == color)):
-			return 1
-		elif (self.legalPos((pos[0]-1,pos[1])) == False or (self.matrix[pos[0]-1][pos[1]].isEmpty() == False and \
-			self.matrix[pos[0]-1][pos[1]].piece.color == color)):
-			return 1
+		if (self.legalPos((pos[0]+1,pos[1])) and self.matrix[pos[0]+1][pos[1]].isEmpty() == False and \
+			self.matrix[pos[0]+1][pos[1]].piece.color != color and self.legalPos((pos[0]-1,pos[1])) and\
+			 self.matrix[pos[0]-1][pos[1]].isEmpty()):
+			return -5
+		elif (self.legalPos((pos[0]-1,pos[1])) and self.matrix[pos[0]-1][pos[1]].isEmpty() == False and \
+			self.matrix[pos[0]-1][pos[1]].piece.color != color and self.legalPos((pos[0]+1,pos[1])) and\
+			 self.matrix[pos[0]+1][pos[1]].isEmpty()):
+			return -5
 		else:
 			return 0
 
+
+
 	def isSafe(self,pos):
-		if(self.horizontallySafe(pos) == 1 and self.verticallySafe(pos) == 1):
+		if(self.horizontallySafe(pos) == 0 and self.verticallySafe(pos) == 0):
 			return True
 			 
 
@@ -279,7 +316,7 @@ class Bot:
 			return self.eval(board)
 		state = board
 		minny = 100000000
-		moves = board.findAllLegalMoves(self.color)
+		moves = board.findAllLegalMoves(self.oppColor)
 		self.mvct = self.mvct + len(moves)
 		self.ct = self.ct + 1
 		for i in range(0,len(moves)):
@@ -304,8 +341,6 @@ class Bot:
 				if(board.matrix[i][j].isEmpty() == False):
 					if(board.matrix[i][j].piece.color == self.color):
 						ans=ans+10
-						ans = ans + board.verticallySafe((i,j))
-						ans = ans + board.horizontallySafe((i,j))
 					else:
 						ans=ans-10
 
@@ -325,7 +360,7 @@ class Bot:
 			if(board.isJump(pos1,pos2)):
 				board.performMove(pos1,pos2)
 				if board.isSafe(pos2):
-					ans = ans + 4
+					ans = ans + 8
 				else:
 					ans = ans + 2
 				board.rollbackMove(pos2,pos1) 
@@ -363,7 +398,7 @@ class Game:
 		self.legalMoves = []
 		self.turnStep = 1
 		self.bot = {}
-		self.finished = True
+		self.finished = False
 		if (self.player[BLUE] == BOT):
 			self.bot[BLUE] = Bot(BLUE,RED)
 		if (self.player[RED] == BOT):
@@ -374,6 +409,33 @@ class Game:
 
 	def event_loop(self):
 		self.mouse_pos = self.graphics.board_coords(pygame.mouse.get_pos()) # what square is the mouse in?
+
+		if (self.finished == True):
+			if(self.turn == RED):
+				self.turn = BLUE
+			else:
+				self.turn = RED
+			if(len(self.board.findAllLegalMoves(self.turn)) == 0):
+				if(self.turn == RED):
+					print("BLUE player wins")
+				else:
+					print ("RED player wins")
+				self.terminate_game()
+			self.finished = False
+
+		if(self.player[self.turn] == RANDOM):
+			moves = self.board.findAllLegalMoves(self.turn)
+			move = moves[randint(0,len(moves)-1)]
+			self.board.performMove(move[0],move[1])
+			self.finished = True
+					
+		elif(self.player[self.turn] == BOT):
+			# print("bot's turn")
+			move = self.bot[self.turn].alphaBetaSearch(self.board,2)
+			# print("move = ",move)
+			self.board.performMove(move[0],move[1])
+			self.finished = True
+
 
 		for event in pygame.event.get():
 
@@ -416,32 +478,7 @@ class Game:
 						self.turnStep=1
 						self.selectedTile = None
 						self.legalMoves = []
-				
-				elif(self.player[self.turn] == RANDOM):
-					moves = self.board.findAllLegalMoves(self.turn)
-					move = moves[randint(0,len(moves)-1)]
-					self.board.performMove(move[0],move[1])
-							
-				else:
-					# print("bot's turn")
-					move = self.bot[self.turn].alphaBetaSearch(self.board,2)
-					# print("move = ",move)
-					self.board.performMove(move[0],move[1])
-					self.finished = True
 
-				if (self.finished == 1):
-					# print("turn changed" , self.turn )
-					if(self.turn == RED):
-						self.turn = BLUE
-					else:
-						self.turn = RED
-
-					if(len(self.board.findAllLegalMoves(self.turn)) == 0):
-						if(self.turn == RED):
-							print("BLUE player wins")
-						else:
-							print ("RED player wins")
-						self.terminate_game()
 
 	def update(self):
 		self.graphics.updateDisplay(self.board, self.selectedTile, self.legalMoves)

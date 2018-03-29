@@ -140,28 +140,32 @@ class Board:
 
 	def verticallySafe(self,pos):
 		color = self.matrix[pos[0]][pos[1]].piece.color
-		if (self.legalPos((pos[0],pos[1]+1)) == False or (self.matrix[pos[0]][pos[1]+1].isEmpty() == False and \
-			self.matrix[pos[0]][pos[1]+1].piece.color == color)):
-			return 1
-		elif (self.legalPos((pos[0],pos[1]-1)) == False or (self.matrix[pos[0]][pos[1]-1].isEmpty() == False and \
-			self.matrix[pos[0]][pos[1]-1].piece.color == color)):
-			return 1
+		if (self.legalPos((pos[0],pos[1]+1)) and self.matrix[pos[0]][pos[1]+1].isEmpty() == False and \
+			self.matrix[pos[0]][pos[1]+1].piece.color != color and self.legalPos((pos[0],pos[1]-1)) and\
+			 self.matrix[pos[0]][pos[1]-1].isEmpty()):
+			return -5
+		elif (self.legalPos((pos[0],pos[1]-1)) and self.matrix[pos[0]][pos[1]-1].isEmpty() == False and \
+			self.matrix[pos[0]][pos[1]-1].piece.color != color and self.legalPos((pos[0],pos[1]+1)) and\
+			 self.matrix[pos[0]][pos[1]+1].isEmpty()):
+			return -5
 		else:
 			return 0
 
 	def horizontallySafe(self,pos):
 		color = self.matrix[pos[0]][pos[1]].piece.color
-		if (self.legalPos((pos[0]+1,pos[1])) == False or (self.matrix[pos[0]+1][pos[1]].isEmpty() == False and \
-			self.matrix[pos[0]+1][pos[1]].piece.color == color)):
-			return 1
-		elif (self.legalPos((pos[0]-1,pos[1])) == False or (self.matrix[pos[0]-1][pos[1]].isEmpty() == False and \
-			self.matrix[pos[0]-1][pos[1]].piece.color == color)):
-			return 1
+		if (self.legalPos((pos[0]+1,pos[1])) and self.matrix[pos[0]+1][pos[1]].isEmpty() == False and \
+			self.matrix[pos[0]+1][pos[1]].piece.color != color and self.legalPos((pos[0]-1,pos[1])) and\
+			 self.matrix[pos[0]-1][pos[1]].isEmpty()):
+			return -5
+		elif (self.legalPos((pos[0]-1,pos[1])) and self.matrix[pos[0]-1][pos[1]].isEmpty() == False and \
+			self.matrix[pos[0]-1][pos[1]].piece.color != color and self.legalPos((pos[0]+1,pos[1])) and\
+			 self.matrix[pos[0]+1][pos[1]].isEmpty()):
+			return -5
 		else:
 			return 0
 
 	def isSafe(self,pos):
-		if(self.horizontallySafe(pos) == 1 and self.verticallySafe(pos) == 1):
+		if(self.horizontallySafe(pos) == 0 and self.verticallySafe(pos) == 0):
 			return True
 			 
 
@@ -279,7 +283,7 @@ class Bot:
 			return self.eval(board)
 		state = board
 		minny = 100000000
-		moves = board.findAllLegalMoves(self.color)
+		moves = board.findAllLegalMoves(self.oppColor)
 		self.mvct = self.mvct + len(moves)
 		self.ct = self.ct + 1
 		for i in range(0,len(moves)):
@@ -304,8 +308,6 @@ class Bot:
 				if(board.matrix[i][j].isEmpty() == False):
 					if(board.matrix[i][j].piece.color == self.color):
 						ans=ans+10
-						ans = ans + board.verticallySafe((i,j))
-						ans = ans + board.horizontallySafe((i,j))
 					else:
 						ans=ans-10
 
@@ -325,7 +327,7 @@ class Bot:
 			if(board.isJump(pos1,pos2)):
 				board.performMove(pos1,pos2)
 				if board.isSafe(pos2):
-					ans = ans + 4
+					ans = ans + 8
 				else:
 					ans = ans + 2
 				board.rollbackMove(pos2,pos1) 
@@ -356,7 +358,7 @@ class Game:
 		self.graphics = Graphics()
 		self.board = Board()
 		self.player = {}
-		self.player[BLUE] = HUMAN
+		self.player[BLUE] = RANDOM
 		self.player[RED] = BOT
 		self.turn = BLUE
 		self.selectedTile = None # a board location.
