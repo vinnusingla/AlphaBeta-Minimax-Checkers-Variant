@@ -451,7 +451,7 @@ class Game:
 					
 		elif(self.player[self.turn] == BOT):
 			# print("bot's turn")
-			move = self.bot[self.turn].alphaBetaSearch(self.board,2)
+			move = self.bot[self.turn].alphaBetaSearch(self.board,4)
 			# print("move = ",move)
 			self.board.performMove(move[0],move[1])
 			self.finished = True
