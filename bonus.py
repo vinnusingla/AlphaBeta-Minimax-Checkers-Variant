@@ -1,7 +1,6 @@
 import pygame,sys,os
 from copy import deepcopy
 from random import randint
-import numpy
 
 ##COLORS##
 #             R    G    B 
