@@ -19,7 +19,5 @@ The game is bot vs human to play follow these instructions
 1 Click on any blue turtle you want
 
 2 Select tile where you want to move it
-
-3 Click anywhwere on board for bot to make move
 --------------------------------------------------------------
 
