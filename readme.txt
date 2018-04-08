@@ -6,6 +6,11 @@ TO RUN CODE
 2 Run these on terminal:
 	source env/bin/activate
 	python game.py
+
+3 To run the game with more moves:
+	source env/bin/activate
+	python bonus.py
+
 --------------------------------------------------------------
 
 
