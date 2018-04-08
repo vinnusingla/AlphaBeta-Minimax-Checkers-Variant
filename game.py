@@ -180,7 +180,7 @@ class Board:
 
 	def blockingScore(self,color):
 		score = 0
-		val = .2
+		val = 1
 		b = [[0 for i in range(self.width)] for j in range(self.length)]
 		for i in range (0,self.length):
 			for j in range(0,self.width):
@@ -322,8 +322,9 @@ class Bot:
 			#call min func
 			maxxy = max(maxxy , self.minValue(state,cutoff-1))
 			if(maxxy >= self.beta):
+				state.rollbackMove(pos2,pos1)
 				return maxxy
-			alpha = max(self.alpha,maxxy)
+			self.alpha = max(self.alpha,maxxy)
 			#rollback move
 			state.rollbackMove(pos2,pos1)
 		return maxxy
@@ -333,7 +334,7 @@ class Bot:
 			return self.eval(board)
 		state = board
 		minny = 100000000
-		moves = board.findAllLegalMoves(self.oppColor)
+		moves = board.findAllLegalMoves(self.color)
 		self.mvct = self.mvct + len(moves)
 		self.ct = self.ct + 1
 		for i in range(0,len(moves)):
@@ -344,8 +345,9 @@ class Bot:
 			#call min func
 			minny = min(minny , self.maxValue(state,cutoff-1))
 			if(minny <= self.alpha):
+				state.rollbackMove(pos2,pos1)
 				return minny
-			beta = min(self.beta,minny)
+			self.beta = min(self.beta,minny)
 			#rollback move
 			state.rollbackMove(pos2,pos1)
 		return minny
@@ -357,9 +359,9 @@ class Bot:
 			for j in range(0,board.width):
 				if(board.matrix[i][j].isEmpty() == False):
 					if(board.matrix[i][j].piece.color == self.color):
-						ans=ans+10
+						ans=ans+100
 					else:
-						ans=ans-10
+						ans=ans-100
 
 		#defenses
 		# for i in range(0,board.length):
@@ -378,9 +380,9 @@ class Bot:
 			if(board.isJump(pos1,pos2)):
 				board.performMove(pos1,pos2)
 				if board.isSafe(pos2):
-					ans = ans + 8
+					ans = ans + 80
 				else:
-					ans = ans + 2
+					ans = ans + 20
 				board.rollbackMove(pos2,pos1) 
 
 
@@ -409,7 +411,7 @@ class Game:
 		self.graphics = Graphics()
 		self.board = Board()
 		self.player = {}
-		self.player[BLUE] = RANDOM
+		self.player[BLUE] = HUMAN
 		self.player[RED] = BOT
 		self.turn = BLUE
 		self.selectedTile = None # a board location.
@@ -528,9 +530,9 @@ mat = ["rrrrrrrr",
       "........",
       "........",
       "........",
-      "......b.",
       "........",
-      "bbbbbb.b",
+      "........",
+      "bbbbbbbb",
       "bbbbbbbb"]
 g=Game()
 g.board.updateBoard(mat)

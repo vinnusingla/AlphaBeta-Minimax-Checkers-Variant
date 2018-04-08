@@ -381,8 +381,9 @@ class Bot:
 			#call min func
 			maxxy = max(maxxy , self.minValue(state,cutoff-1))
 			if(maxxy >= self.beta):
+				state.rollbackMove(pos2,pos1)
 				return maxxy
-			alpha = max(self.alpha,maxxy)
+			self.alpha = max(self.alpha,maxxy)
 			#rollback move
 			state.rollbackMove(pos2,pos1)
 		return maxxy
@@ -392,7 +393,7 @@ class Bot:
 			return self.eval(board)
 		state = board
 		minny = 100000000
-		moves = board.findAllLegalMoves(self.oppColor)
+		moves = board.findAllLegalMoves(self.color)
 		self.mvct = self.mvct + len(moves)
 		self.ct = self.ct + 1
 		for i in range(0,len(moves)):
@@ -403,8 +404,9 @@ class Bot:
 			#call min func
 			minny = min(minny , self.maxValue(state,cutoff-1))
 			if(minny <= self.alpha):
+				state.rollbackMove(pos2,pos1)
 				return minny
-			beta = min(self.beta,minny)
+			self.beta = min(self.beta,minny)
 			#rollback move
 			state.rollbackMove(pos2,pos1)
 		return minny
@@ -591,9 +593,9 @@ mat = ["rrrrrrrr",
       "........",
       "........",
       "........",
-      "......b.",
       "........",
-      "bbbbbb.b",
+      "........",
+      "bbbbbbbb",
       "bbbbbbbb"]
 g=Game()
 g.board.updateBoard(mat)
